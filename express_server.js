@@ -2,6 +2,18 @@ const express = require("express");
 const app = express();
 const PORT = 8080; // default port 8080
 
+function generateRandomString() {
+  let result = '';
+  const characters = 'abcdefghijklmnopqrstuvwxyz0123456789';
+  const charactersLength = characters.length;
+
+  for (let i = 0; i < length; i++) {
+    result += characters.charAt(Math.floor(Math.random() * charactersLength));
+  }
+
+  return result;
+};
+
 app.set('view engine', 'ejs');
 
 const urlDatabase = {
@@ -12,8 +24,9 @@ const urlDatabase = {
 app.use(express.urlencoded({ extended: true}));
 
 app.post("/urls", (req, res) => {
+  urlDatabase[generateRandomString()] = req.body;
   console.log(req.body); // Log the POST request body to the console
-  res.send("ok"); // Repond with 'Ok' (we will replace this)
+  res.redirect("/urls/:id"); // Repond with 'Ok' (we will replace this)
 });
 
 app.get("/", (req, res) => {
