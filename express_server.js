@@ -24,9 +24,10 @@ const urlDatabase = {
 app.use(express.urlencoded({ extended: true}));
 
 app.post("/urls", (req, res) => {
-  urlDatabase[generateRandomString()] = req.body;
+  let newString = generateRandomString();
+  urlDatabase[newString] = req.body;
   console.log(req.body); // Log the POST request body to the console
-  res.redirect("/urls/:id"); // Repond with 'Ok' (we will replace this)
+  res.redirect(`/urls/${newString}`); // Redirectrs the user to the page with a newly created short url
 });
 
 app.get("/", (req, res) => {
