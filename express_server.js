@@ -23,6 +23,7 @@ const urlDatabase = {
 
 app.use(express.urlencoded({ extended: true}));
 
+// Adds new url to the list, redirects to page with short url
 app.post("/urls", (req, res) => {
   let newString = generateRandomString();
   urlDatabase[newString] = req.body;
@@ -30,34 +31,48 @@ app.post("/urls", (req, res) => {
   res.redirect(`/urls/${newString}`); // Redirectrs the user to the page with a newly created short url
 });
 
+// Deletes a URL
+app.post("/urls/:id/delete", (req, res) => {
+  const id = req.params.id
+  delete urlDatabase[id];
+  res.redirect("/urls");
+});
+
+// Header page
 app.get("/", (req, res) => {
   res.send("Hello!");
 });
 
+// Shows all urls using json format
 app.get('/urls.json', (req, res) => {
   res.json(urlDatabase);
 });
 
+// A list of all urls edited
 app.get("/urls", (req, res) => {
   const templateVars = { urls: urlDatabase };
   res.render("urls_index", templateVars);
 });
 
+// Page to create new urls
 app.get("/urls/new", (req, res) => {
   res.render("urls_new");
 });
 
+// Placeholder :d
 app.get("/urls/:id", (req, res) => {
   // console.log(req.params.id);
   const templateVars = {id: req.params.id, longURL: urlDatabase[req.params.id]}
   res.render("urls_show", templateVars)
 });
 
+// Definition of what ID is
 app.get("/u/:id", (req, res) => {
   const longURL = urlDatabase[req.params.id];
   res.redirect(longURL);
 });
 
+// Going here gives Hello World
 app.get("/hello", (req, res) => {
   res.send("<html><body>Hello <b>World</b></body></html>\n");
 });
