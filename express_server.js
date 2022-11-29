@@ -47,10 +47,20 @@ app.post("/urls/:id", (req, res) => {
   res.redirect("/urls")
 });
 
+app.post("/login", (req, res) => {
+  res.cookie('username', req.body.username);
+  res.end("Done");
+});
+
 // Header page
 app.get("/", (req, res) => {
   res.send("Hello!");
 });
+
+// Login Page
+// app.get("/login", (req, res) => {
+//   
+// });
 
 // Shows all urls using json format
 app.get('/urls.json', (req, res) => {
