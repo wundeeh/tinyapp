@@ -7,11 +7,11 @@ function generateRandomString() {
   const characters = 'abcdefghijklmnopqrstuvwxyz0123456789';
   const charactersLength = characters.length;
 
-  for (let i = 0; i < length; i++) {
+  for (let i = 0; i < characters.length; i++) {
     result += characters.charAt(Math.floor(Math.random() * charactersLength));
   }
 
-  return result;
+  return result.substring(0, 6);
 };
 
 app.set('view engine', 'ejs');
@@ -25,17 +25,26 @@ app.use(express.urlencoded({ extended: true}));
 
 // Adds new url to the list, redirects to page with short url
 app.post("/urls", (req, res) => {
-  let newString = generateRandomString();
-  urlDatabase[newString] = req.body;
-  console.log(req.body); // Log the POST request body to the console
-  res.redirect(`/urls/${newString}`); // Redirectrs the user to the page with a newly created short url
+  const newUrl = generateRandomString();
+  urlDatabase[newUrl] = req.body.longURL;
+  //console.log(req.body); // Log the POST request body to the console
+  res.redirect(`/urls/${newUrl}`); // Redirectrs the user to the page with a newly created short url
 });
 
 // Deletes a URL
 app.post("/urls/:id/delete", (req, res) => {
-  const { id } = req.params
+  const { id } = req.params;
   delete urlDatabase[id];
   res.redirect("/urls");
+});
+
+// Edits a URL
+app.post("/urls/:id", (req, res) => {
+  const { id } = req.params;
+  console.log("body request:", req.body.newURL);
+  urlDatabase[id] = req.body.newURL
+  console.log("URLs after update:", urlDatabase);
+  res.redirect("/urls")
 });
 
 // Header page
