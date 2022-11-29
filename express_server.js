@@ -33,7 +33,7 @@ app.post("/urls", (req, res) => {
 
 // Deletes a URL
 app.post("/urls/:id/delete", (req, res) => {
-  const id = req.params.id
+  const { id } = req.params
   delete urlDatabase[id];
   res.redirect("/urls");
 });
