@@ -17,10 +17,30 @@ function generateRandomString() {
 
 app.set('view engine', 'ejs');
 
+// Urls database
 const urlDatabase = {
   "b2xVn2": "http://www.lighthouselabs.ca",
   "9sm5xK": "http://www.google.com"
 };
+
+// Users database
+const users = {
+  userRandomID: {
+    id: "userRandomID",
+    email: "user@example.com",
+    password: "purple-monkey-dinosaur",
+  },
+  user2RandomID: {
+    id: "user2RandomID",
+    email: "user2@example.com",
+    password: "dishwasher-funk",
+  },
+}
+
+// Find the user that matches the email and returns the object
+const getUserFromEmail = (obj, email) => {
+  return Object.keys(obj).find(key => obj[key] === email);
+}
 
 app.use(express.urlencoded({ extended: true}));
 
@@ -44,22 +64,34 @@ app.post("/urls/:id/delete", (req, res) => {
 // Edits a URL
 app.post("/urls/:id", (req, res) => {
   const { id } = req.params;
-  console.log("body request:", req.body.newURL);
-  urlDatabase[id] = req.body.newURL
-  console.log("URLs after update:", urlDatabase);
-  res.redirect("/urls")
+  //console.log("body request:", req.body.newURL);
+  urlDatabase[id] = req.body.newURL;
+  //console.log("URLs after update:", urlDatabase);
+  res.redirect("/urls");
+});
+
+// Registration
+app.post("/register", (req, res) => {
+  const randomID = generateRandomString();
+  newUser = {id: randomID, email: req.body.email, password: req.body.password};
+  res.cookie("userID", randomID);
+  users[randomID] = newUser;
+    //console.log("registered users:", users);
+  res.redirect("/urls");
 });
 
 // Login
 app.post("/login", (req, res) => {
-  res.cookie('username', req.body.username);
+  let user = getUserFromEmail(users, req.body.email);
+    //console.log("current user:", user);
+  res.cookie('userID', user.id);
   res.redirect("/urls");
 });
 
 // Logout
 app.post("/logout", (req, res) => {
-  res.clearCookie('username');
-  res.redirect("/urls")
+  res.clearCookie('userID');
+  res.redirect("/urls");
 });
 
 // Registration Page
@@ -85,7 +117,11 @@ app.get('/urls.json', (req, res) => {
 
 // A list of all urls edited
 app.get("/urls", (req, res) => {
-  const templateVars = { urls: urlDatabase, username: req.cookies["username"]};
+  let user = users[req.cookies["userID"]];
+  //getUserFromID(users, req.cookies["userID"]);
+    // console.log("userID:",req.cookies["userID"]);
+    console.log("urls user:", user);
+  const templateVars = { urls: urlDatabase, user: user};
   res.render("urls_index", templateVars);
 });
 
