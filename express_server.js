@@ -1,5 +1,6 @@
 const express = require("express");
-const cookieParser = require('cookie-parser')
+const cookieParser = require('cookie-parser');
+const e = require("express");
 const app = express();
 const PORT = 8080; // default port 8080
 
@@ -53,10 +54,15 @@ app.use(cookieParser());
 
 // Adds new url to the list, redirects to page with short url
 app.post("/urls", (req, res) => {
-  const newUrl = generateRandomString();
-  urlDatabase[newUrl] = req.body.longURL;
-  //console.log(req.body); // Log the POST request body to the console
-  res.redirect(`/urls/${newUrl}`); // Redirectrs the user to the page with a newly created short url
+  let user = users[req.cookies["userID"]];
+  if (user) {
+    const newUrl = generateRandomString();
+    urlDatabase[newUrl] = req.body.longURL;
+      //console.log(req.body); // Log the POST request body to the console
+    res.redirect(`/urls/${newUrl}`);
+  } else {
+    res.status(401).send("You must be logged in to do that");
+  }
 });
 
 // Deletes a URL
@@ -119,7 +125,10 @@ app.post("/logout", (req, res) => {
 // Registration Page
 app.get("/register", (req, res) => {
   let user = users[req.cookies["userID"]];
-  const templateVars = { urls: urlDatabase, user: user};
+  if (user) {
+    res.redirect("/urls");
+  }
+  const templateVars = { user: user};
   res.render("urls_registration", templateVars);
 });
 
@@ -131,7 +140,12 @@ app.get("/", (req, res) => {
 // Login Page
 app.get("/login", (req, res) => {
   let user = users[req.cookies["userID"]];
-  const templateVars = { urls: urlDatabase, user: user};
+  if (user) {
+    res.redirect("/urls");
+  }
+    //console.log("users:", users);
+    //console.log("user:", user, req.cookies);
+  const templateVars = { user: user};
   res.render("urls_login", templateVars);
 });
 
@@ -152,11 +166,15 @@ app.get("/urls", (req, res) => {
 // Page to create new urls
 app.get("/urls/new", (req, res) => {
   let user = users[req.cookies["userID"]];
+  if (!user) {
+    res.redirect("/login")
+    return;
+  }
   const templateVars = { urls: urlDatabase, user: user};
   res.render("urls_new", templateVars);
 });
 
-// Placeholder :id
+// Access the shortened ID
 app.get("/urls/:id", (req, res) => {
   // console.log(req.params.id);
   let user = users[req.cookies["userID"]];
@@ -166,8 +184,12 @@ app.get("/urls/:id", (req, res) => {
 
 // Definition of what ID is
 app.get("/u/:id", (req, res) => {
-  const longURL = urlDatabase[req.params.id];
-  res.redirect(longURL);
+  if (urlDatabase[req.params.id]) {
+    const longURL = urlDatabase[req.params.id];
+    res.redirect(longURL);
+  } else {
+    res.status(404).send("This URL does not exist")
+  }
 });
 
 // Going here gives Hello World
