@@ -119,10 +119,9 @@ app.get("/", (req, res) => {
 });
 
 // Login Page
-// app.get("/login", (req, res) => {
-//   const templateVars = { };
-//   res.render("urls_index", templateVars);
-// });
+app.get("/login", (req, res) => {
+  res.render("urls_login");
+});
 
 // Shows all urls using json format
 app.get('/urls.json', (req, res) => {
@@ -140,13 +139,16 @@ app.get("/urls", (req, res) => {
 
 // Page to create new urls
 app.get("/urls/new", (req, res) => {
-  res.render("urls_new");
+  let user = users[req.cookies["userID"]];
+  const templateVars = { urls: urlDatabase, user: user};
+  res.render("urls_new", templateVars);
 });
 
-// Placeholder :d
+// Placeholder :id
 app.get("/urls/:id", (req, res) => {
   // console.log(req.params.id);
-  const templateVars = {id: req.params.id, longURL: urlDatabase[req.params.id]}
+  let user = users[req.cookies["userID"]];
+  const templateVars = {id: req.params.id, longURL: urlDatabase[req.params.id], urls: urlDatabase, user:user};
   res.render("urls_show", templateVars)
 });
 
