@@ -90,7 +90,7 @@ app.post("/register", (req, res) => {
       //console.log("registered users:", users);
     res.redirect("/urls");
   } else {
-    res.status(400).send("Account already registered")
+    res.status(400).send("Account already registered");
   }
 });
 
@@ -98,19 +98,29 @@ app.post("/register", (req, res) => {
 app.post("/login", (req, res) => {
   let user = getUserFromEmail(users, req.body.email);
     //console.log("current user:", user);
-  res.cookie('userID', user.id);
-  res.redirect("/urls");
+  if (!user) {
+    return res.status(403).send("This user doesn't exist");
+  }
+  if (user.email === req.body.email && user.password !== req.body.password) {
+    return res.status(403).send("Invalid credentials");
+  }
+  if (user.email === req.body.email && user.password === req.body.password) {
+    res.cookie('userID', user.id);
+    res.redirect("/urls");
+  }
 });
 
 // Logout
 app.post("/logout", (req, res) => {
   res.clearCookie('userID');
-  res.redirect("/urls");
+  res.redirect("/login");
 });
 
 // Registration Page
 app.get("/register", (req, res) => {
-  res.render("urls_registration");
+  let user = users[req.cookies["userID"]];
+  const templateVars = { urls: urlDatabase, user: user};
+  res.render("urls_registration", templateVars);
 });
 
 // Header page
@@ -120,7 +130,9 @@ app.get("/", (req, res) => {
 
 // Login Page
 app.get("/login", (req, res) => {
-  res.render("urls_login");
+  let user = users[req.cookies["userID"]];
+  const templateVars = { urls: urlDatabase, user: user};
+  res.render("urls_login", templateVars);
 });
 
 // Shows all urls using json format
