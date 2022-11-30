@@ -17,9 +17,9 @@
       <a class="nav-item nav-link" href="/urls">My URLs</a>
       <a class="nav-item nav-link" href="/urls/new">Create New URL</a>
       <% if (!user) { %>
-        <form method="POST" action="/login" name="username" style="display: flex; margin-left: 1200px;">
-          <input type="text" name="username" placeholder="Username">
-          <button class="btn btn-outline-dark submit">Submit</button>
+        <form method="POST" action="/login" name="username" style="display: flex; margin-left: 1340px;">
+          <a class="btn btn-outline-dark" href="/register">Register</a>
+          <a class="btn btn-outline-dark submit" href="/login" style="margin-left: 10px;">Log In</a>
         </form>
       <% } else { %>
         <form method="POST" action="/logout" name="loggedIn" style="display: flex; margin-left: 1250px;">
