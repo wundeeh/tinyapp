@@ -15,12 +15,17 @@
 </head>
 
 <body>
-  <h1 style="background-color: #28a745; padding-left: 45%;">Registration</h1>
+  <header>
+    <%- include ('partials/_header') %> 
+  </header>
+  <h1 style="margin-top: 10px; margin-left: 10px;"><strong>Create Account</strong></h1>
   <form method="POST" action="/register">
-    <input placeholder="Email" type="email" name="email" style="margin-left: 40%">
-    <input placeholder="Password" type="password" name="password">
+    <h5 style="margin-left: 10px;">Email Adress</h5>
+    <input placeholder="Email" type="email" name="email" style="margin-bottom: 10px; margin-left: 10px;">
+    <h5 style="margin-left: 10px;">Password</h5>
+    <input placeholder="Password" type="password" name="password" style="margin-left: 10px;">
     <br>
-    <button class="btn btn-outline-success" style="margin-left: 910px; margin-top: 10px;">Submit</button>
+    <button class="btn btn-outline-success" style="margin-top: 10px; margin-left: 10px;">Register</button>
   </form>
 </body>
 </html>
