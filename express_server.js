@@ -62,6 +62,11 @@ app.post("/logout", (req, res) => {
   res.redirect("/urls")
 });
 
+// Registration Page
+app.get("/register", (req, res) => {
+  res.render("urls_registration");
+});
+
 // Header page
 app.get("/", (req, res) => {
   res.send("Hello!");
