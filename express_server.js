@@ -39,8 +39,13 @@ const users = {
 
 // Find the user that matches the email and returns the object
 const getUserFromEmail = (obj, email) => {
-  return Object.keys(obj).find(key => obj[key] === email);
-}
+  for (const user in obj) {
+    if (obj[user].email === email) {
+      return obj[user];
+    }
+  }
+  return undefined;
+};
 
 app.use(express.urlencoded({ extended: true}));
 
@@ -64,20 +69,29 @@ app.post("/urls/:id/delete", (req, res) => {
 // Edits a URL
 app.post("/urls/:id", (req, res) => {
   const { id } = req.params;
-  //console.log("body request:", req.body.newURL);
+    //console.log("body request:", req.body.newURL);
   urlDatabase[id] = req.body.newURL;
-  //console.log("URLs after update:", urlDatabase);
+    //console.log("URLs after update:", urlDatabase);
   res.redirect("/urls");
 });
 
 // Registration
 app.post("/register", (req, res) => {
-  const randomID = generateRandomString();
-  newUser = {id: randomID, email: req.body.email, password: req.body.password};
-  res.cookie("userID", randomID);
-  users[randomID] = newUser;
-    //console.log("registered users:", users);
-  res.redirect("/urls");
+    //console.log("password:", req.body.password);
+  if (req.body.email === "" || req.body.password === "") {
+    res.status(400).send("Invalid parameters");
+  }
+
+  if (!getUserFromEmail(users, req.body.email)) {
+    const randomID = generateRandomString();
+    newUser = {id: randomID, email: req.body.email, password: req.body.password};
+    res.cookie("userID", randomID);
+    users[randomID] = newUser;
+      //console.log("registered users:", users);
+    res.redirect("/urls");
+  } else {
+    res.status(400).send("Account already registered")
+  }
 });
 
 // Login
@@ -118,9 +132,8 @@ app.get('/urls.json', (req, res) => {
 // A list of all urls edited
 app.get("/urls", (req, res) => {
   let user = users[req.cookies["userID"]];
-  //getUserFromID(users, req.cookies["userID"]);
-    // console.log("userID:",req.cookies["userID"]);
-    console.log("urls user:", user);
+    //console.log("userID:",req.cookies["userID"]);
+    //console.log("urls user:", user);
   const templateVars = { urls: urlDatabase, user: user};
   res.render("urls_index", templateVars);
 });
