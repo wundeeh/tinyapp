@@ -1,9 +1,13 @@
+// Required addons
 const express = require("express");
 const cookieParser = require('cookie-parser');
 const e = require("express");
+const bcrypt = require("bcryptjs");
+
 const app = express();
 const PORT = 8080; // default port 8080
 
+// Random string generator
 function generateRandomString() {
   let result = '';
   const characters = 'abcdefghijklmnopqrstuvwxyz0123456789';
@@ -16,13 +20,8 @@ function generateRandomString() {
   return result.substring(0, 6);
 };
 
+// EJS compatability
 app.set('view engine', 'ejs');
-
-// Old url database
-// const urlDatabase = {
-//   "b2xVn2": "http://www.lighthouselabs.ca",
-//   "9sm5xK": "http://www.google.com"
-// };
 
 // Url database
 const urlDatabase = {
@@ -129,7 +128,7 @@ app.post("/register", (req, res) => {
 
   if (!getUserFromEmail(users, req.body.email)) {
     const randomID = generateRandomString();
-    newUser = {id: randomID, email: req.body.email, password: req.body.password};
+    newUser = {id: randomID, email: req.body.email, password: bcrypt.hashSync(req.body.password, 10)};
     res.cookie("userID", randomID);
     users[randomID] = newUser;
       //console.log("registered users:", users);
@@ -141,18 +140,17 @@ app.post("/register", (req, res) => {
 
 // Login
 app.post("/login", (req, res) => {
-  let user = getUserFromEmail(users, req.body.email);
+  const user = getUserFromEmail(users, req.body.email);
     //console.log("current user:", user);
-  if (!user) {
-    return res.status(403).send("This user doesn't exist");
-  }
-  if (user.email === req.body.email && user.password !== req.body.password) {
-    return res.status(403).send("Invalid credentials");
-  }
-  if (user.email === req.body.email && user.password === req.body.password) {
+    //console.log("password:", req.body.password)
+    //console.log("compare sync:", bcrypt.compareSync(req.body.password, hashedPassword))
+  if (user && bcrypt.compareSync(req.body.password, user.password)) {
     res.cookie('userID', user.id);
-    res.redirect("/urls");
+    res.redirect("/urls"); 
+  } else {
+    res.status(401).send("Invalid credentials, please try again");
   }
+
 });
 
 // Logout
