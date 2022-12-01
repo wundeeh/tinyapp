@@ -1,53 +1,33 @@
 // Required addons
 const express = require("express");
 const app = express();
-
 const cookieSession = require('cookie-session')
-
 const bcrypt = require("bcryptjs");
-
-const PORT = 8080; // default port 8080
+const PORT = 8080;
 
 // EJS compatability
 app.set('view engine', 'ejs');
 
-// Url database
-const urlDatabase = {
-  b2xVn2: {
-    longURL: "http://www.lighthouselabs.ca",
-    userID: "aJ48lW",
-  },
-  s9m5xK: {
-    longURL: "https://www.google.com",
-    userID: "aJ48lW",
-  },
-};
+// Databases
+const urlDatabase = {};
+const users = {};
 
-// Users database
-const users = {
-  aJ48lW: {
-    id: "aJ48lW",
-    email: "test@test.com",
-    password: "123",
-  },
-  user2RandomID: {
-    id: "user2RandomID",
-    email: "user2@example.com",
-    password: "dishwasher-funk",
-  },
-}
-
+// Functions
 const { getUserFromEmail, generateRandomString, urlsForUser } = require('./helpers');
 
-
-
-
-
+// app.uses
 app.use(express.urlencoded({ extended: true}));
 app.use(cookieSession({
   name: 'session',
   secret: 'blue-lobster-jumpscare',
 }));
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+// POST METHODS:
+
 
 // Adds new url to the list, redirects to page with short url
 app.post("/urls", (req, res) => {
@@ -58,7 +38,6 @@ app.post("/urls", (req, res) => {
       longURL: req.body.longURL,
       userID: user.id,
     };
-      //console.log(req.body); // Log the POST request body to the console
     res.redirect(`/urls/${newUrl}`);
   } else {
     res.status(401).send("You must be logged in to do that");
@@ -74,7 +53,7 @@ app.post("/urls/:id/delete", (req, res) => {
     delete urlDatabase[id];
     res.redirect("/urls");
   } else {
-    res.status(403).send("You're not authorised to do that")
+    res.status(403).send("You're not authorised to do that");
   }
 });
 
@@ -87,25 +66,22 @@ app.post("/urls/:id", (req, res) => {
     urlDatabase[id].longURL = req.body.newURL;
     res.redirect("/urls");
   } else {
-    res.status(403).send("You're not authorised to do that")
+    res.status(403).send("You're not authorised to do that");
   }
-  //console.log("body request:", req.body.newURL);
-  //console.log("URLs after update:", urlDatabase);
 });
 
 // Registration
 app.post("/register", (req, res) => {
-    //console.log("password:", req.body.password);
   if (req.body.email === "" || req.body.password === "") {
     res.status(400).send("Invalid parameters");
   }
 
   if (!getUserFromEmail(users, req.body.email)) {
     const userID = generateRandomString();
+
     newUser = {id: userID, email: req.body.email, password: bcrypt.hashSync(req.body.password, 10)};
     req.session.userID = userID;
     users[userID] = newUser;
-      console.log("registered users:", users);
     res.redirect("/urls");
   } else {
     res.status(400).send("Account already registered");
@@ -115,9 +91,7 @@ app.post("/register", (req, res) => {
 // Login
 app.post("/login", (req, res) => {
   const user = getUserFromEmail(users, req.body.email);
-    console.log("current user:", user);
-    //console.log("password:", req.body.password)
-    //console.log("compare sync:", bcrypt.compareSync(req.body.password, hashedPassword))
+
   if (user && bcrypt.compareSync(req.body.password, user.password)) {
     req.session.userID = user.id;
     res.redirect("/urls"); 
@@ -133,9 +107,17 @@ app.post("/logout", (req, res) => {
   res.redirect("/login");
 });
 
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+// GET METHODS
+
+
 // Registration Page
 app.get("/register", (req, res) => {
-  const user = req.session.userID;
+  const user = users[req.session.userID];
+
   if (user) {
     res.redirect("/urls");
   }
@@ -145,18 +127,23 @@ app.get("/register", (req, res) => {
 
 // Header page
 app.get("/", (req, res) => {
-  res.send("Hello!");
+  const user = users[req.session.userID];
+
+  if (user) {
+    res.redirect("/urls");
+  } else {
+    res.redirect("/login");
+  }
 });
 
 // Login Page
 app.get("/login", (req, res) => {
-  const user = req.session.userID;
+  const user = users[req.session.userID];
+  
   if (user) {
     res.redirect("/urls");
     return;
   }
-    //console.log("users:", users);
-    //console.log("user:", user, req.cookies);
   const templateVars = { user: user};
   res.render("urls_login", templateVars);
 });
@@ -169,12 +156,7 @@ app.get('/urls.json', (req, res) => {
 // A list of all urls edited
 app.get("/urls", (req, res) => {
   const user = users[req.session.userID];
-    console.log("req.session", req.session)
-    console.log("user:", user);
-    //console.log("users:", users);
-    //console.log(userURLS);
-    //console.log("userID:",req.cookies["userID"]);
-    //console.log("urls user:", user);
+
   if (user) {
     const userURLS = urlsForUser(urlDatabase, user.id);
     const templateVars = { urls: userURLS, user: user};
@@ -187,6 +169,7 @@ app.get("/urls", (req, res) => {
 // Page to create new urls
 app.get("/urls/new", (req, res) => {
   const user = users[req.session.userID];
+
   if (!user) {
     res.redirect("/login");
     return;
@@ -197,10 +180,9 @@ app.get("/urls/new", (req, res) => {
 
 // Access the shortened ID
 app.get("/urls/:id", (req, res) => {
-  // console.log(req.params.id);
   const user = users[req.session.userID];
+
   const userURLS = urlsForUser(urlDatabase, user.id);
-    console.log("urlsForUser", userURLS);
   const templateVars = {id: req.params.id, longURL: urlDatabase[req.params.id].longURL, urls: urlDatabase, user: user};
 
   if (!user || !userURLS[req.params.id]) {
