@@ -1,7 +1,7 @@
 // Required addons
 const express = require("express");
 const app = express();
-const cookieSession = require('cookie-session')
+const cookieSession = require('cookie-session');
 const bcrypt = require("bcryptjs");
 const PORT = 8080;
 
@@ -79,7 +79,7 @@ app.post("/register", (req, res) => {
   if (!getUserFromEmail(users, req.body.email)) {
     const userID = generateRandomString();
 
-    newUser = {id: userID, email: req.body.email, password: bcrypt.hashSync(req.body.password, 10)};
+    let newUser = {id: userID, email: req.body.email, password: bcrypt.hashSync(req.body.password, 10)};
     req.session.userID = userID;
     users[userID] = newUser;
     res.redirect("/urls");
@@ -94,7 +94,7 @@ app.post("/login", (req, res) => {
 
   if (user && bcrypt.compareSync(req.body.password, user.password)) {
     req.session.userID = user.id;
-    res.redirect("/urls"); 
+    res.redirect("/urls");
   } else {
     res.status(401).send("Invalid credentials, please try again");
   }
@@ -161,7 +161,7 @@ app.get("/urls", (req, res) => {
     const userURLS = urlsForUser(urlDatabase, user.id);
     const templateVars = { urls: userURLS, user: user};
     res.render("urls_index", templateVars);
-} else {
+  } else {
     res.status(400).send("You must be logged in to view this");
   }
 });
