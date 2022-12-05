@@ -182,12 +182,15 @@ app.get("/urls/new", (req, res) => {
 app.get("/urls/:id", (req, res) => {
   const user = users[req.session.userID];
 
+  if (!user) {
+    res.status(403).send("You're not authorised to do that");
+  }
+
   const userURLS = urlsForUser(urlDatabase, user.id);
   const templateVars = {id: req.params.id, longURL: urlDatabase[req.params.id].longURL, urls: urlDatabase, user: user};
 
   if (!user || !userURLS[req.params.id]) {
     res.status(403).send("You're not authorised to do that");
-    return;
   } else {
     res.render("urls_show", templateVars);
   }
